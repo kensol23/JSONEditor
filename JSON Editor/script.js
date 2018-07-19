@@ -1,103 +1,109 @@
+/**
+ * @param {Object} json - JSON to be validated.
+ * @param {Object} schema - JSON Schema
+ * @param {HTMLElement} container - HTML Container
+ */
 var validateSchema = function (json, schema, container) {
-  
-  if (schema) {
+  //remove childs from container
+  clearContainer(container);
+
+  //execute schema validation and store result in a variable
+  var validate = tv4.validateMultiple(json, schema);
+  if (!validate.valid) {
+
+    //create a table for the error list
+    var errorList = document.createElement("table");
+    errorList.setAttribute("id", "errorList");
+
+    //add table header
+    var tableHeader  = newElement("thead"),
+        headerRow    = newElement("tr"),
+        headerTitle1 = newElement("th"),
+        headerTitle2 = newElement("th"),
+        headerTitle3 = newElement("th");
+    //
+    headerRow.appendChild(headerTitle1).appendChild(createText("ERROR MESSAGE"));
+    headerRow.appendChild(headerTitle2).appendChild(createText("DATA PATH"));
+    headerRow.appendChild(headerTitle3).appendChild(createText("SCHEMA PATH"));
+    //
+    tableHeader.appendChild(headerRow);
+    tableHeader.setAttribute("class", "errorListHeader");
     
-    //remove childs from container
-    clearContainer(container);
+    //create table body
+    tableBody = newElement("tbody");
+    tableBody.setAttribute("height", "100px");
+    //append header and body to table
+    errorList.appendChild(tableHeader);
+    errorList.appendChild(tableBody);
 
-    //execute schema validation and store result in a variable
-    var validate = tv4.validateMultiple(json, schema);
-    if (!validate.valid) {
-
-      //create a container for the three colums.
-      var errorList = document.createElement("div");
-      errorList.setAttribute("id", "errorList");
-
-      //create three sepparate COLUMN-CONTAINERS for error list so each one can be scrolled horizontally when overflown
-      var errorMessageCol = document.createElement("ul");
-      errorMessageCol.setAttribute("class", "errorMessage");
-      //
-      var schemaPathCol = document.createElement("ul");
-      schemaPathCol.setAttribute("class", "schemaPath");
-      //
-      var dataPathCol = document.createElement("ul");
-      dataPathCol.setAttribute("class", "dataPath");
+    //iterate over array of errors to add elements to the list
+    for (e in validate.errors) {
       
-      //append columns to container
-      errorList.appendChild(errorMessageCol);
-      errorList.appendChild(schemaPathCol);
-      errorList.appendChild(dataPathCol);
-
-      //iterate over array of errors to add elements to the list
-      for (e in validate.errors) {
-        
-        //setup schemaPath and dataPath attributes for the errorListRowX elements
-        var schemaPath = validate.errors[e].schemaPath;
-        if (schemaPath) {
-          if (schemaPath.charAt(0) === '/')
-            schemaPath = schemaPath.slice(1);
-        }else{
-          schemaPath = "";
-        }
-        var dataPath = validate.errors[e].dataPath;
-        if (dataPath) {
-          if (dataPath.charAt(0) === '/')
-            dataPath = dataPath.slice(1);
-        }else{
-          dataPath = "";
-        }
-
-        //create a LI element for each column and append it to their respective COLUMN-CONTAINER
-        var errorListRow1 = document.createElement("li");
-        errorListRow1.setAttribute("class", "errorListRow");
-        errorListRow1.appendChild(document.createTextNode(validate.errors[e].message));
-        errorListRow1.setAttribute("dataPath", dataPath);
-        errorListRow1.setAttribute("schemaPath", schemaPath);
-        errorListRow1.onclick = highLightError;
-        errorMessageCol.appendChild(errorListRow1);
-        //
-        var errorListRow2 = document.createElement("li");
-        errorListRow2.setAttribute("class", "errorListRow");
-        errorListRow2.appendChild(document.createTextNode(validate.errors[e].schemaPath));
-        errorListRow2.setAttribute("dataPath", dataPath);
-        errorListRow2.setAttribute("schemaPath", schemaPath);
-        errorListRow2.onclick = highLightError;
-        schemaPathCol.appendChild(errorListRow2);
-        //
-        var errorListRow3 = document.createElement("li");
-        errorListRow3.setAttribute("class", "errorListRow");
-        errorListRow3.appendChild(document.createTextNode(validate.errors[e].dataPath));
-        errorListRow3.setAttribute("dataPath", dataPath);
-        errorListRow3.setAttribute("schemaPath", schemaPath);
-        errorListRow3.onclick = highLightError;
-        dataPathCol.appendChild(errorListRow3);
+      //setup schemaPath and dataPath attributes for the errorListRowX elements
+      var schemaPath = validate.errors[e].schemaPath;
+      if (schemaPath) {
+        if (schemaPath.charAt(0) === '/') schemaPath = schemaPath.slice(1);
+      }else{
+        schemaPath = "";
+      }
+      var dataPath = validate.errors[e].dataPath;
+      if (dataPath) {
+        if (dataPath.charAt(0) === '/')  dataPath = dataPath.slice(1);
+      }else{
+        dataPath = "";
       }
 
-      var errorHead          = document.createElement("h3"),
-          errorListHeader    = document.createElement("div"),
-          errorMessageHeader = errorListHeader.appendChild(document.createElement("h4")),
-          schemaPathHeader   = errorListHeader.appendChild(document.createElement("h4")),
-          dataPathHeader     = errorListHeader.appendChild(document.createElement("h4"));
+      //create error row
+      var errorListRow = newElement("tr");
+      errorListRow.setAttribute("dataPath", dataPath);
+      errorListRow.setAttribute("schemaPath", schemaPath);
+      errorListRow.onclick = highLightError;//append onClick event to table row
 
-      errorHead.appendChild(document.createTextNode("SCHEMA VALIDATION ERRORS"));
-      errorListHeader.setAttribute("class", "errorListHeader");
-      errorMessageHeader.appendChild(document.createTextNode("Message"));
-      schemaPathHeader.appendChild(document.createTextNode("Schema Path"));
-      dataPathHeader.appendChild(document.createTextNode("Data Path"));
+      //create cell elements
+      var messageData = newElement("td");
+          messageData.appendChild(document.createTextNode(validate.errors[e].message));
+      //
+      var dataPathData = newElement("td");
+          dataPathData.appendChild(document.createTextNode(validate.errors[e].dataPath));
+      //
+      var schemaPathData = newElement("td");
+          schemaPathData.appendChild(document.createTextNode(validate.errors[e].schemaPath));
 
-      container.appendChild(errorHead);
-      container.appendChild(errorListHeader);
-      container.appendChild(errorList);
+      //append cell elements to row
+      errorListRow.appendChild(messageData);
+      errorListRow.appendChild(dataPathData);
+      errorListRow.appendChild(schemaPathData);
 
-      container.setAttribute("style", "style-list: none; text-align: left;");
+      //append row to table body and to table
+      errorList.appendChild(tableBody).appendChild(errorListRow);
     }
-  } else {
-    document.getElementById('footerContent').appendChild(document.createTextNode("EMPTY SCHEMA"));
+
+    //create a section header
+    var errorHead = document.createElement("h3");
+        errorHead.appendChild(document.createTextNode("SCHEMA VALIDATION ERRORS"));
+
+    //append elements to container
+    container.appendChild(errorHead);
+    container.appendChild(errorList);
   }
 },
-
+/**
+ * @param {string} selector - CSS Selector.
+ */
 $ = function (selector) {
   return document.querySelector(selector);
+},
+/**
+ * @param {string} e - Element name.
+ */
+newElement = function(e){
+  return document.createElement(e);
+},
+/**
+ * @param {string} text - Text value.
+ */
+createText = function (text){
+  return document.createTextNode(text);
 },
 
 highLightError = function () {
@@ -131,10 +137,10 @@ clearContainer = function(container){
   }
 };
 
-var codeContainer = document.getElementById('codeEditor');
-var treeContainer = document.getElementById('treeEditor');
-var schemaContainer = document.getElementById('schemaEditor');
-var footerContainer = document.getElementById('footerContent');
+var codeContainer   = $('#codeEditor');
+var treeContainer   = $('#treeEditor');
+var schemaContainer = $('#schemaEditor');
+var footerContainer = $('#footerContent');
 
 var test_schema = {
   "title": "Retrieve List of Items in Shopping Bag response",
@@ -537,7 +543,6 @@ var codeOptions = {
     }catch(e){
       clearContainer(footerContainer);
     }
-
   }
 };
 

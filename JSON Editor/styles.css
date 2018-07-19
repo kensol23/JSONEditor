@@ -84,48 +84,49 @@ footer h3 {
   padding: 0 10px;
 }
 
-#errorList {
-  max-height: 200px;
-  overflow: scroll;
-  display:flex;
-}
-
-#errorList ul{
-  white-space: nowrap;
-}
-
-.errorListRow, .errorListHeader {
-  display: flex;
-  flex-direction: row;
-  padding-right: 10px;
-}
-
-.errorListRow {
-  margin-bottom: 3px;
-}
-
-.errorListRow:hover {
-    border-bottom: solid #bd5b00;
-    background-color: #628c7b;
-    border-width: 1px;
-    margin-bottom: 2px;
-}
-
-.errorListRow div {
-  flex:1;
-  -webkit-flex: 1;
-  -ms-flex: 1;
-  margin-right: 5px;
-}
-
 .errorListHeader{
   margin-bottom: 5px;
+  color: #a9c2bb;
 }
 
-.errorListHeader h4 {
-  margin-right: 5px;
+footer table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+footer thead{
+  border-bottom: 2px solid;
+  border-color: #e9ab83;
+}
+
+footer tbody {
+  display:block;
+  overflow: auto;
+  padding-top: 5px;
+}
+
+footer tbody td, footer thead th {
+  padding: 2px;
+  text-align: left;
+  flex:1
+}
+
+footer tbody tr {
+  border-bottom: 1px solid #628c7b;
+  display: flex;
+}
+
+footer thead tr {
+  display: flex;
+}
+
+footer tbody tr:hover {
+    border-bottom: 1px solid #bd5b00;
+    background-color: #628c7b;
+}
+
+footer th{
   margin-bottom: 5px;
-  color: #e9ab83;
 }
 
 /* Responsive layout - makes the menu and the content (inside the section) sit on top of each other instead of next to each other */

@@ -8,8 +8,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
       id: 'main',
       bounds: {
         width: 1024, 
-        height: 768,
-
+        height: 768
       },
       frame:{
         color:'#0d5641'
